@@ -1,6 +1,5 @@
 import streamlit as st
 from datetime import datetime
-import os
 
 # Set up page
 st.set_page_config("Beck Chat", "src/chat_icon.png", "centered")
@@ -8,13 +7,14 @@ st.set_page_config("Beck Chat", "src/chat_icon.png", "centered")
 # Check if logged in
 if "authenticated" not in st.session_state or st.session_state["authenticated"] is False:
     # Login page
+    st.title("Beck's Ai Chatbot")
     with st.form("login", clear_on_submit=False, border=True):
-        username = st.text_input("Username", value='admin') # For debug, autofill the login credentials
-        password = st.text_input("Password", type='password', value='admin') # For debug, autofill the login credentials
+        username = st.text_input("Username")
+        password = st.text_input("Password", type='password')
 
         if st.form_submit_button("Login"):
-            if username == 'admin':
-                if password == 'admin':
+            if username == st.secrets["USERNAME"]:
+                if password == st.secrets["PASSWORD"]:
                     st.session_state["authenticated"] = True
                     st.rerun()
                 else:
@@ -41,13 +41,13 @@ def reply(message: str):
     elif message in ['hi', 'hi!', 'hello', 'hello!', 'yo', 'yo!']:
         return "Hello!"
     elif message == "cow":
-        return "$RESPONSE_TYPE_IMAGE-src/cow.webp"
+        return "$RESPONSE_TYPE_IMAGE-src/cow.webp-$TEXT_BREAK-Sure, here's a picture of a **cow!**"
     elif "mario" in message:
-        return "$RESPONSE_TYPE_IMAGE-src/mario.png"
+        return "$RESPONSE_TYPE_IMAGE-src/mario.png-$TEXT_BREAK-Here's an image of **Mario**, *a popular character from Nintendo's many video games and movies.*"
     elif message == "tree":
-        return "$RESPONSE_TYPE_IMAGE-src/tree.jpeg"
+        return "$RESPONSE_TYPE_IMAGE-src/tree.jpeg-$TEXT_BREAK-This is a **tree**, *a vital life form on earth.*"
     elif  "homer" in message:
-        return "$RESPONSE_TYPE_IMAGE-src/homer.jpg"
+        return "$RESPONSE_TYPE_IMAGE-src/homer.jpg-$TEXT_BREAK-**Homer Simpson** is a character from the TV Show 'The Simpsons'. Here is what he looks like."
     elif "+" in message: # Add two numbers - SUM
         part1 = message.split("+")[0]
         part2 = message.split("+")[1]
@@ -145,7 +145,7 @@ def reply(message: str):
 
         return f"The quotient is **{quotient}**"
     else:
-        return "Sorry, but I'm not sure what this means: " + original_message
+        return "**Error - Command not found:** \"" + original_message + "\""
 
 # Chatbox
 if "authenticated" in st.session_state:
@@ -154,13 +154,13 @@ if "authenticated" in st.session_state:
         if "chat_history" not in st.session_state:
             st.session_state.chat_history = []
 
-        msg = st.chat_input("Send a message")
+        msg = st.chat_input("Message Beck's AI")
 
         if msg:
             if msg == "clear": # Special clear command
 
                 st.session_state.chat_history.clear()
-                st.toast("Chat History Cleared!")
+                st.toast("Chat History Cleared!", icon='🧹')
             else:
                 response = reply(msg)
                 # Store the message and response in chat history
@@ -172,7 +172,11 @@ if "authenticated" in st.session_state:
                 st.markdown(chat["message"])
             with st.chat_message("ai", avatar='🤖'):
                 if "$RESPONSE_TYPE_IMAGE-" in chat["response"]:
-                    st.image(chat["response"].removeprefix("$RESPONSE_TYPE_IMAGE-"))
+                    ai_reply = chat["response"].split("-$TEXT_BREAK-")
+                    file_path = ai_reply[0].removeprefix("$RESPONSE_TYPE_IMAGE-")
+                    message = ai_reply[1]
+                    st.markdown(message)
+                    st.image(file_path)
                 else:
                     st.markdown(chat["response"])
 
