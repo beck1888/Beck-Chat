@@ -16,6 +16,8 @@ if "authenticated" not in st.session_state or st.session_state["authenticated"] 
             if username == st.secrets["USERNAME"]:
                 if password == st.secrets["PASSWORD"]:
                     st.session_state["authenticated"] = True
+                    st.session_state.chat_history = [] # Initialize chat history
+                    st.session_state.chat_history.append({"message": None, "response": "Welcome back! What can I help you with?"}) # Append a welcome message to history
                     st.rerun()
                 else:
                     st.error("Incorrect password")
@@ -168,8 +170,13 @@ if "authenticated" in st.session_state:
 
         # Display the chat history with respective display formats
         for chat in st.session_state.chat_history:
-            with st.chat_message("user", avatar='👨🏻'):
-                st.markdown(chat["message"])
+
+            if chat["message"] is None: # Allows for blank messages
+                pass
+            else:
+                with st.chat_message("user", avatar='👨🏻'):
+                    st.markdown(chat["message"])
+
             with st.chat_message("ai", avatar='🤖'):
                 if "$RESPONSE_TYPE_IMAGE-" in chat["response"]:
                     ai_reply = chat["response"].split("-$TEXT_BREAK-")
