@@ -1,8 +1,14 @@
 import streamlit as st
 from datetime import datetime
+from coders import encrypt, decrypt
+import random
 
 # Set up page
 st.set_page_config("Beck Chat", "src/chat_icon.png", "centered")
+
+# Initialize session states
+if "special" not in st.session_state:
+    st.session_state["special"] = "not active"
 
 # Check if logged in
 if "authenticated" not in st.session_state or st.session_state["authenticated"] is False:
@@ -32,6 +38,26 @@ def reply(message: str):
     # Make the message lowercase for more accurate processing
     message = message.lower()
 
+    # Process special states if any
+    if st.session_state["special"] == "called encrypt":
+        st.session_state["key"] = message
+        st.session_state["special"] = "encrypt - key loaded"
+        return "I've loaded your key. Now, please paste the plain text below and press enter."
+    elif st.session_state["special"] == "called decrypt":
+        st.session_state["key"] = message
+        st.session_state["special"] = "decrypt - key loaded"
+        return "Awesome, I've learned the key. Please paste your encrypted message below and press enter."
+    elif st.session_state["special"] == "encrypt - key loaded":
+        encrypted_text = encrypt(message, st.session_state["key"])
+        st.session_state["key"] = ""
+        st.session_state["special"] = ""
+        return f"**Here is the encrypted message:** \n\n {encrypted_text}"
+    elif st.session_state["special"] == "decrypt - key loaded":
+        decrypted_text = decrypt(message, st.session_state["key"])
+        st.session_state["key"] = ""
+        st.session_state["special"] = ""
+        return f"**Here is the decrypted message:** \n\n {decrypted_text}"
+    
     # Response logic (expect lowercase)
     if message == "exit": # Special command
         st.session_state["authenticated"] = False
@@ -185,8 +211,18 @@ def reply(message: str):
 
         st.session_state["last_calc"] = quotient
         return f"The quotient is **{quotient}**"
+    elif message == "encode" or message == "encrypt":
+        return "*This feature is under development*"
+        st.session_state["special"] = "called encrypt"
+        return "Sure, lets encrypt some text! To start, type your key and press enter."
+    elif message == "decode" or message == "decrypt":
+        return "*This feature is under development*"
+        st.session_state["special"] = "called decrypt"
+        return "I can help you decode and encrypted message. To start, please send me your key."
     else:
-        return "**Error - Command not found:** \"" + original_message + "\""
+        unknown_responses = ["I'm not sure what you mean", "I don't understand what that means", "I can't figure out what you're trying to say", "I'm not sure what to do with that"]
+
+        return random.sample(unknown_responses, 1)[0]
 
 # Chatbox
 if "authenticated" in st.session_state:
