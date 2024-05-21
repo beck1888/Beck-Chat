@@ -232,12 +232,23 @@ def reply(message: str):
         setup = r["setup"]
         st.session_state["special"] = "punchline_wait"
         st.session_state["punchline"] = r["punchline"]
+        # Adjust end of setup to indicate a continuation if needed
+        last_char = setup[-1]
+        setup = setup[:-1]
+        if last_char != "?":
+            setup = setup + "..."
+        else:
+            setup = setup + "..?"
+
         return setup
     elif "haha" in message or "lol" in message or "lmao" in message:
         return "I'm glad you liked my joke!"
     elif message == ".insult me": # Has a dot to prevent accidental usage because some are NSFW and one slash is taken by division
         r = requests.get("https://evilinsult.com/generate_insult.php?lang=en&type=json").json()
-        return r["insult"]
+        return f"**Here's what I think of you:** \n\n{r["insult"]}"
+    elif "fact" in message:
+        r = requests.get("https://uselessfacts.jsph.pl/api/v2/facts/random?language=e").json()
+        return f"**Here is a, probably useless, fact you probably didn't know:** \n\n{r['text']}"
     # It's unknown what the user wants
     else:
         unknown_responses = ["I'm not sure what you mean", "I don't understand what that means", "I can't figure out what you're trying to say", "I'm not sure what to do with that"]
@@ -281,7 +292,3 @@ if "authenticated" in st.session_state:
                     st.image(file_path)
                 else:
                     st.markdown(chat["response"])
-
-# if "authenticated" in st.session_state and st.session_state["authenticated"] is True:
-#     # Show the content under the chat input element if logged in
-#     st.html('<p style="text-align: center; font-style: italic;">This chat may be saved for quality control.</p>')
