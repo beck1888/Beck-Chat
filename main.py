@@ -5,7 +5,7 @@ from coders import encrypt, decrypt
 import random
 import requests
 import json
-import os
+# import os
 import socket
 
 # Set up page
@@ -22,13 +22,14 @@ else:
 
 # Temp bypass login - security setting
 bypass_login = True # Set this one
-if bypass_login is True and host == "local":
+# if bypass_login is True and host == "local":
+if bypass_login is True:
     st.session_state["authenticated"] = True
     st.html("<p style=\"color: orange; font-weight: bold; font-size: 20px; text-align: center;\">WARNING: The Lock Screen Is Being Bypassed</p>")
-elif bypass_login is True and host != "local":
-    st.html("<p style=\"color: red; font-weight: bold; font-size: 50px; text-align: center;\">403: Forbidden</p>")
-    st.html("<p style=\"color: black; font-weight: bold; font-size: 20px; text-align: center;\">This app's security settings do not allow for the login page to be skipped on public servers./p>")
-    st.stop()
+# elif bypass_login is True and host != "local":
+#     st.html("<p style=\"color: red; font-weight: bold; font-size: 50px; text-align: center;\">403: Forbidden</p>")
+#     st.html("<p style=\"color: black; font-weight: bold; font-size: 20px; text-align: center;\">This app's security settings do not allow for the login page to be skipped on public servers./p>")
+#     st.stop()
 
 # Initialize session states
 if "special" not in st.session_state:
