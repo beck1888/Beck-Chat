@@ -7,7 +7,7 @@ st.set_page_config("Beck Chat", "src/chat_icon.png", "centered")
 # Check if logged in
 if "authenticated" not in st.session_state or st.session_state["authenticated"] is False:
     # Login page
-    st.title("Beck's Ai Chatbot")
+    st.title("Beck's AI Chatbot")
     with st.form("login", clear_on_submit=False, border=True):
         username = st.text_input("Username")
         password = st.text_input("Password", type='password')
@@ -50,6 +50,41 @@ def reply(message: str):
         return "$RESPONSE_TYPE_IMAGE-src/tree.jpeg-$TEXT_BREAK-This is a **tree**, *a vital life form on earth.*"
     elif  "homer" in message:
         return "$RESPONSE_TYPE_IMAGE-src/homer.jpg-$TEXT_BREAK-**Homer Simpson** is a character from the TV Show 'The Simpsons'. Here is what he looks like."
+    elif message[0] in "+-*/": # Check if first char is calling for an operation based on the last result
+        # Make sure previous result exists
+        if "last_calc" not in st.session_state:
+            return "You don't have any past calculation to evaluate!"
+        
+        operation = message [0]
+
+        num1 = st.session_state["last_calc"]
+        part2 = message.split(operation)[1]
+
+        num2 = ''
+        for char in part2:
+            if char in "0123456789.":
+                num2 += char
+        num2 = float(num2)
+
+        if operation == "+":
+            result = num1 + num2
+            operation = "sum"
+        elif operation == "*":
+            result = num1 * num2
+            operation = "product"
+        elif operation == "-":
+            result = num1 - num2
+            operation = "difference"
+        elif operation == "/":
+            result = num1 / num2
+            operation = "quotient"
+
+        if result.is_integer() is True:
+            result = int(result)
+
+        st.session_state["last_calc"] = result
+        return f"The {operation} is {result}"
+    
     elif "+" in message: # Add two numbers - SUM
         part1 = message.split("+")[0]
         part2 = message.split("+")[1]
@@ -73,6 +108,7 @@ def reply(message: str):
         if sum.is_integer() is True:
             sum = int(sum)
 
+        st.session_state["last_calc"] = sum
         return f"The sum is **{sum}**"
     elif "*" in message: # Multiply two numbers - PRODUCT
         part1 = message.split("*")[0]
@@ -97,6 +133,7 @@ def reply(message: str):
         if product.is_integer() is True:
             product = int(product)
 
+        st.session_state["last_calc"] = product
         return f"That product is **{product}**"
     elif "-" in message: # Subtract two numbers - DIFFERENCE
         part1 = message.split("-")[0]
@@ -121,6 +158,7 @@ def reply(message: str):
         if difference.is_integer() is True:
             difference = int(difference)
 
+        st.session_state["last_calc"] = difference
         return f"The difference is **{difference}**"
     elif "/" in message: # Divide two numbers - QUOTIENT
         part1 = message.split("/")[0]
@@ -145,6 +183,7 @@ def reply(message: str):
         if quotient.is_integer() is True:
             quotient = int(quotient)
 
+        st.session_state["last_calc"] = quotient
         return f"The quotient is **{quotient}**"
     else:
         return "**Error - Command not found:** \"" + original_message + "\""
