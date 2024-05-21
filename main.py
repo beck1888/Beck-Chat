@@ -5,10 +5,30 @@ from coders import encrypt, decrypt
 import random
 import requests
 import json
-import subprocess
+import os
+import socket
 
 # Set up page
 st.set_page_config("Beck Chat", "src/chat_icon.png", "centered")
+
+# See which server is used
+
+# Get the hostname to check if running on Streamlit Cloud or localhost
+hostname = socket.gethostname()
+if "streamlit" in hostname:
+    host = "streamlit"
+else:
+    host = "local"
+
+# Temp bypass login - security setting
+bypass_login = True # Set this one
+if bypass_login is True and host == "local":
+    st.session_state["authenticated"] = True
+    st.html("<p style=\"color: orange; font-weight: bold; font-size: 20px; text-align: center;\">WARNING: The Lock Screen Is Being Bypassed</p>")
+elif bypass_login is True and host != "local":
+    st.html("<p style=\"color: red; font-weight: bold; font-size: 50px; text-align: center;\">403: Forbidden</p>")
+    st.html("<p style=\"color: black; font-weight: bold; font-size: 20px; text-align: center;\">This app's security settings do not allow for the login page to be skipped on public servers./p>")
+    st.stop()
 
 # Initialize session states
 if "special" not in st.session_state:
@@ -34,36 +54,12 @@ if "authenticated" not in st.session_state or st.session_state["authenticated"] 
             else:
                 st.error("Incorrect username")
     # Version info
-
-    # Function to get the content of the local main.py
-    def get_local_main_py():
-        with open('main.py', 'r') as file:
-            return file.read()
-
-    # Function to get the content of the remote main.py from GitHub
-    def get_remote_main_py(repo_url, branch='main', filepath='main.py'):
-        # Construct the URL for the raw content of the file
-        raw_url = f'https://raw.githubusercontent.com/{repo_url}/{branch}/{filepath}'
-        response = requests.get(raw_url)
-        if response.status_code == 200:
-            return response.text
-        else:
-            raise Exception(f"Error fetching remote file: {response.status_code}")
-
-    # Define the repository and file details
-    repo_url = 'beck1888/Beck-Chat'
-    branch = 'main'
-    filepath = 'main.py'
-
-    # Get the local and remote content
-    local_main_py = get_local_main_py()
-    remote_main_py = get_remote_main_py(repo_url, branch, filepath)
-
-    # Compare the content and print the result
-    if local_main_py == remote_main_py:
-        st.text("🟩 You're fully updated.")
-    else:
-        st.text("🟥 You need to update!")
+    with open("version.json", "r") as v:
+        version = json.load(v)
+        version_info = f"""
+    Last updated: {version["month"].capitalize()}-{version["day"]}-{version["year"]} at {version["hour"]}:{version["minute"]} {version["meridian"].upper()} | Commit: {version["change-word"].capitalize()}
+    Hostname: {hostname}"""
+    st.text(version_info)
 
 # Response helper functions
 # Function for getting a meme
