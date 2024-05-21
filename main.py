@@ -1,8 +1,11 @@
+# Imports block
 import streamlit as st
 from datetime import datetime
 from coders import encrypt, decrypt
 import random
 import requests
+import json
+from PIL import Image
 
 # Set up page
 st.set_page_config("Beck Chat", "src/chat_icon.png", "centered")
@@ -30,6 +33,30 @@ if "authenticated" not in st.session_state or st.session_state["authenticated"] 
                     st.error("Incorrect password")
             else:
                 st.error("Incorrect username")
+
+# Response helper functions
+# Function for getting a meme
+def get_a_meme():
+    # Get the json data
+    with open('memes.json', 'r') as f:
+        data = json.load(f)
+
+    # List to hold the paths
+    paths = []
+
+    # Extract 'path' from each dictionary in the list
+    for item in data:
+        paths.append(item['path'])
+
+    # Pick a random path
+    url_fragment = random.sample(paths, 1)[0]
+
+    # Add start of url to the picked fragment
+    full_url = f"https://raw.githubusercontent.com/deep5050/programming-memes/main/{url_fragment}"
+    # import os; os.system(f"open -a \"Google Chrome\" {full_url}")
+    
+    # Return the random url in full
+    return full_url
 
 # Reply logic
 def reply(message: str):
@@ -249,7 +276,9 @@ def reply(message: str):
     elif "fact" in message:
         r = requests.get("https://uselessfacts.jsph.pl/api/v2/facts/random?language=e").json()
         return f"**Here is a, probably useless, fact you probably didn't know:** \n\n{r['text']}"
-    # It's unknown what the user wants
+    elif "meme" in message:
+        return f"$RESPONSE_TYPE_IMAGE-{get_a_meme()}-$TEXT_BREAK-Here's a great meme for you. Enjoy!"
+    # It's unknown what the user wants - no command found
     else:
         unknown_responses = ["I'm not sure what you mean", "I don't understand what that means", "I can't figure out what you're trying to say", "I'm not sure what to do with that"]
 
