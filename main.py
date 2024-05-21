@@ -5,7 +5,7 @@ from coders import encrypt, decrypt
 import random
 import requests
 import json
-from PIL import Image
+import subprocess
 
 # Set up page
 st.set_page_config("Beck Chat", "src/chat_icon.png", "centered")
@@ -16,7 +16,7 @@ if "special" not in st.session_state:
 
 # Check if logged in
 if "authenticated" not in st.session_state or st.session_state["authenticated"] is False:
-    # Login page
+    # Login page/lock screen
     st.title("Beck's AI Chatbot")
     with st.form("login", clear_on_submit=False, border=True):
         username = st.text_input("Username")
@@ -33,6 +33,37 @@ if "authenticated" not in st.session_state or st.session_state["authenticated"] 
                     st.error("Incorrect password")
             else:
                 st.error("Incorrect username")
+    # Version info
+
+    # Function to get the content of the local main.py
+    def get_local_main_py():
+        with open('main.py', 'r') as file:
+            return file.read()
+
+    # Function to get the content of the remote main.py from GitHub
+    def get_remote_main_py(repo_url, branch='main', filepath='main.py'):
+        # Construct the URL for the raw content of the file
+        raw_url = f'https://raw.githubusercontent.com/{repo_url}/{branch}/{filepath}'
+        response = requests.get(raw_url)
+        if response.status_code == 200:
+            return response.text
+        else:
+            raise Exception(f"Error fetching remote file: {response.status_code}")
+
+    # Define the repository and file details
+    repo_url = 'beck1888/Beck-Chat'
+    branch = 'main'
+    filepath = 'main.py'
+
+    # Get the local and remote content
+    local_main_py = get_local_main_py()
+    remote_main_py = get_remote_main_py(repo_url, branch, filepath)
+
+    # Compare the content and print the result
+    if local_main_py == remote_main_py:
+        st.text("🟩 You're fully updated.")
+    else:
+        st.text("🟥 You need to update!")
 
 # Response helper functions
 # Function for getting a meme
