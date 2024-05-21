@@ -235,6 +235,9 @@ def reply(message: str):
         return setup
     elif "haha" in message or "lol" in message or "lmao" in message:
         return "I'm glad you liked my joke!"
+    elif message == ".insult me": # Has a dot to prevent accidental usage because some are NSFW and one slash is taken by division
+        r = requests.get("https://evilinsult.com/generate_insult.php?lang=en&type=json").json()
+        return r["insult"]
     # It's unknown what the user wants
     else:
         unknown_responses = ["I'm not sure what you mean", "I don't understand what that means", "I can't figure out what you're trying to say", "I'm not sure what to do with that"]
