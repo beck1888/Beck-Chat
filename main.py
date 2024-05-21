@@ -2,6 +2,7 @@ import streamlit as st
 from datetime import datetime
 from coders import encrypt, decrypt
 import random
+import requests
 
 # Set up page
 st.set_page_config("Beck Chat", "src/chat_icon.png", "centered")
@@ -57,6 +58,13 @@ def reply(message: str):
         st.session_state["key"] = ""
         st.session_state["special"] = ""
         return f"**Here is the decrypted message:** \n\n {decrypted_text}"
+    elif st.session_state["special"] == "punchline_wait":
+        punchline = st.session_state["punchline"]
+        st.session_state["punchline"] = ""
+
+        st.session_state["special"] = ""
+
+        return punchline
     
     # Response logic (expect lowercase)
     if message == "exit": # Special command
@@ -219,6 +227,15 @@ def reply(message: str):
         return "*This feature is under development*"
         st.session_state["special"] = "called decrypt"
         return "I can help you decode and encrypted message. To start, please send me your key."
+    elif "joke" in message or "laugh" in message:
+        r = requests.get("https://official-joke-api.appspot.com/random_joke").json()
+        setup = r["setup"]
+        st.session_state["special"] = "punchline_wait"
+        st.session_state["punchline"] = r["punchline"]
+        return setup
+    elif "haha" in message or "lol" in message or "lmao" in message:
+        return "I'm glad you liked my joke!"
+    # It's unknown what the user wants
     else:
         unknown_responses = ["I'm not sure what you mean", "I don't understand what that means", "I can't figure out what you're trying to say", "I'm not sure what to do with that"]
 
